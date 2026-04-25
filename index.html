@@ -531,6 +531,31 @@
     data.price = 5; // Submission fee only — dispute fee charged after review
     data.disputeFee = ticketType === 'traffic' ? 20 : 15;
 
+    // Send form data to business owner via FormSubmit.co
+    fetch('https://formsubmit.co/ajax/4037796@gmail.com', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+      },
+      body: JSON.stringify({
+        _subject: 'New DisputeIt Ticket — ' + data.city + ' — ' + data.violation,
+        _template: 'table',
+        Email: data.email,
+        'City/State': data.city,
+        'Ticket Number': data.ticketNum,
+        Violation: data.violation,
+        'Ticket Date': data.date,
+        'Ticket Amount': '$' + data.amount,
+        'What Happened': data.story,
+        'Ticket Type': data.ticketType,
+        'Submission Fee': '$5',
+        'Dispute Fee (if viable)': '$' + data.disputeFee + ' (' + data.ticketType + ')',
+      }),
+    }).catch(function(err) {
+      console.warn('FormSubmit notification failed:', err);
+    });
+
     // Redirect to $5 submission payment
     const stripeLink = STRIPE_LINKS.submission;
     if (stripeLink && !stripeLink.startsWith('YOUR_')) {
@@ -551,28 +576,4 @@
         'Dispute Fee (if viable): $' + data.disputeFee + ' (' + data.ticketType + ')\n' +
         '---\nReview ticket. If disputable, send $' + data.disputeFee + ' payment link to customer.';
 
-      window.location.href = 'mailto:info@disputeit.xyz?subject=' + encodeURIComponent(subject) + '&body=' + encodeURIComponent(body);
-    }
-
-    // Show confirmation
-    document.getElementById('ticketForm').innerHTML = `
-      <div style="text-align:center;padding:20px 0;">
-        <div style="font-size:48px;margin-bottom:16px;">✓</div>
-        <h3 style="margin-bottom:8px;">Submitted!</h3>
-        <p style="color:#888;font-size:14px;">Complete your payment and we'll have your dispute letter in your inbox within 24 hours.</p>
-        <p style="color:#666;font-size:12px;margin-top:16px;">Questions? Email info@disputeit.xyz</p>
-      </div>`;
-  }
-
-  document.querySelectorAll('a[href^="#"]').forEach(a => {
-    a.addEventListener('click', e => {
-      const href = a.getAttribute('href');
-      if (href === '#') return;
-      const target = document.querySelector(href);
-      if (target) { e.preventDefault(); target.scrollIntoView({ behavior: 'smooth' }); }
-    });
-  });
-</script>
-
-</body>
-</html>
+      window.location.href = 'mailto:info@disputeit.xyz?subject=' + encodeURIComponent(subject) + '&bod
