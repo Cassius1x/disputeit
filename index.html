@@ -576,4 +576,28 @@
         'Dispute Fee (if viable): $' + data.disputeFee + ' (' + data.ticketType + ')\n' +
         '---\nReview ticket. If disputable, send $' + data.disputeFee + ' payment link to customer.';
 
-      window.location.href = 'mailto:info@disputeit.xyz?subject=' + encodeURIComponent(subject) + '&bod
+      window.location.href = 'mailto:info@disputeit.xyz?subject=' + encodeURIComponent(subject) + '&body=' + encodeURIComponent(body);
+    }
+
+    // Show confirmation
+    document.getElementById('ticketForm').innerHTML = `
+      <div style="text-align:center;padding:20px 0;">
+        <div style="font-size:48px;margin-bottom:16px;">✓</div>
+        <h3 style="margin-bottom:8px;">Submitted!</h3>
+        <p style="color:#888;font-size:14px;">Complete your payment and we'll have your dispute letter in your inbox within 24 hours.</p>
+        <p style="color:#666;font-size:12px;margin-top:16px;">Questions? Email info@disputeit.xyz</p>
+      </div>`;
+  }
+
+  document.querySelectorAll('a[href^="#"]').forEach(a => {
+    a.addEventListener('click', e => {
+      const href = a.getAttribute('href');
+      if (href === '#') return;
+      const target = document.querySelector(href);
+      if (target) { e.preventDefault(); target.scrollIntoView({ behavior: 'smooth' }); }
+    });
+  });
+</script>
+
+</body>
+</html>
