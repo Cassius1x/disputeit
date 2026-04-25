@@ -1,0 +1,576 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DisputeIt — Fight Your Parking & Traffic Tickets</title>
+  <meta name="description" content="Got a parking or traffic ticket? Don't just pay it. DisputeIt generates a professional dispute letter in minutes. Starting at $10. Fight back.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; background: #0a0a0a; color: #e8e8e8; line-height: 1.6; }
+
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      background: rgba(10,10,10,0.92); backdrop-filter: blur(16px);
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+      padding: 14px 24px; display: flex; align-items: center; justify-content: space-between;
+    }
+    .nav-logo { font-size: 20px; font-weight: 800; color: #fff; text-decoration: none; }
+    .nav-logo span { color: #ff6b6b; }
+    .nav-links { display: flex; gap: 24px; align-items: center; }
+    .nav-links a { color: #888; text-decoration: none; font-size: 13px; font-weight: 500; transition: color 0.2s; }
+    .nav-links a:hover { color: #fff; }
+    .nav-cta {
+      background: #ff6b6b; color: #fff; padding: 8px 20px; border-radius: 8px;
+      font-weight: 700; font-size: 13px; text-decoration: none; transition: all 0.2s;
+    }
+    .nav-cta:hover { background: #ff5252; transform: translateY(-1px); }
+    .mobile-menu { display: none; background: none; border: none; color: #fff; font-size: 24px; cursor: pointer; }
+
+    .hero {
+      min-height: 100vh; display: flex; align-items: center; justify-content: center;
+      text-align: center; padding: 120px 24px 80px; position: relative; overflow: hidden;
+    }
+    .hero::before {
+      content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%;
+      background: radial-gradient(circle at 50% 50%, rgba(255,107,107,0.06) 0%, transparent 50%);
+      animation: pulse 8s ease-in-out infinite;
+    }
+    @keyframes pulse { 0%,100%{transform:scale(1);opacity:0.5} 50%{transform:scale(1.1);opacity:1} }
+    .hero-content { position: relative; max-width: 720px; }
+    .hero-badge {
+      display: inline-block; background: rgba(255,107,107,0.1); border: 1px solid rgba(255,107,107,0.2);
+      padding: 6px 16px; border-radius: 20px; font-size: 12px; font-weight: 600; color: #ff6b6b;
+      margin-bottom: 24px; letter-spacing: 0.5px;
+    }
+    .hero h1 { font-size: clamp(36px, 7vw, 64px); font-weight: 900; line-height: 1.1; margin-bottom: 20px; }
+    .hero h1 .red { color: #ff6b6b; }
+    .hero p { font-size: 18px; color: #999; max-width: 540px; margin: 0 auto 36px; line-height: 1.7; }
+    .hero-btns { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+    .btn-primary {
+      background: #ff6b6b; color: #fff; padding: 14px 32px; border-radius: 10px;
+      font-size: 15px; font-weight: 700; text-decoration: none; border: none; cursor: pointer;
+      transition: all 0.2s; display: inline-flex; align-items: center; gap: 8px;
+    }
+    .btn-primary:hover { background: #ff5252; transform: translateY(-2px); box-shadow: 0 8px 24px rgba(255,107,107,0.2); }
+    .btn-secondary {
+      background: rgba(255,255,255,0.06); color: #e8e8e8; padding: 14px 32px; border-radius: 10px;
+      font-size: 15px; font-weight: 600; text-decoration: none; border: 1px solid rgba(255,255,255,0.1);
+      transition: all 0.2s;
+    }
+    .btn-secondary:hover { background: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.2); }
+    .hero-stats { display: flex; gap: 40px; justify-content: center; margin-top: 60px; flex-wrap: wrap; }
+    .stat { text-align: center; }
+    .stat-num { font-size: 28px; font-weight: 800; color: #ff6b6b; }
+    .stat-label { font-size: 12px; color: #666; margin-top: 2px; text-transform: uppercase; letter-spacing: 0.5px; }
+
+    section { padding: 100px 24px; max-width: 1100px; margin: 0 auto; }
+    .section-label { font-size: 12px; font-weight: 700; color: #ff6b6b; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 12px; }
+    .section-title { font-size: clamp(28px, 4vw, 42px); font-weight: 800; margin-bottom: 16px; line-height: 1.2; }
+    .section-sub { font-size: 16px; color: #888; max-width: 600px; line-height: 1.7; margin-bottom: 48px; }
+
+    .steps { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 24px; }
+    .step {
+      background: #111; border: 1px solid #1e1e1e; border-radius: 16px; padding: 32px 28px;
+      transition: all 0.3s;
+    }
+    .step:hover { border-color: rgba(255,107,107,0.3); transform: translateY(-4px); }
+    .step-num {
+      width: 40px; height: 40px; border-radius: 10px; background: rgba(255,107,107,0.1);
+      color: #ff6b6b; display: flex; align-items: center; justify-content: center;
+      font-size: 16px; font-weight: 800; margin-bottom: 20px;
+    }
+    .step h3 { font-size: 18px; font-weight: 700; margin-bottom: 10px; }
+    .step p { font-size: 14px; color: #888; line-height: 1.6; }
+
+    .reasons-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; }
+    .reason-card {
+      background: #111; border: 1px solid #1e1e1e; border-radius: 16px; padding: 28px 24px;
+    }
+    .reason-icon { font-size: 28px; margin-bottom: 14px; }
+    .reason-card h3 { font-size: 15px; font-weight: 700; margin-bottom: 8px; }
+    .reason-card p { font-size: 13px; color: #888; line-height: 1.6; }
+
+    .price-box {
+      max-width: 480px; margin: 0 auto; background: #111; border: 2px solid #ff6b6b;
+      border-radius: 20px; padding: 40px 36px; text-align: center;
+    }
+    .price-tag { font-size: 12px; color: #ff6b6b; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }
+    .price-amount { font-size: 64px; font-weight: 900; margin-bottom: 4px; }
+    .price-amount .dollar { font-size: 28px; vertical-align: top; margin-right: 2px; color: #ff6b6b; }
+    .price-period { font-size: 14px; color: #666; margin-bottom: 28px; }
+    .price-features { list-style: none; text-align: left; margin-bottom: 28px; }
+    .price-features li {
+      padding: 10px 0; font-size: 14px; color: #bbb; display: flex; align-items: center; gap: 10px;
+      border-bottom: 1px solid rgba(255,255,255,0.04);
+    }
+    .price-features li::before { content: '✓'; color: #ff6b6b; font-weight: 700; }
+    .price-btn {
+      display: block; width: 100%; padding: 16px; border-radius: 10px; background: #ff6b6b;
+      color: #fff; font-size: 16px; font-weight: 700; border: none; cursor: pointer;
+      transition: all 0.2s; text-decoration: none;
+    }
+    .price-btn:hover { background: #ff5252; transform: translateY(-2px); }
+
+    .ticket-types { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; margin-top: 20px; }
+    .ticket-type {
+      background: #111; border: 1px solid #1e1e1e; border-radius: 12px; padding: 18px 16px;
+      text-align: center; font-size: 13px; font-weight: 600; color: #ccc;
+    }
+    .ticket-type .tt-icon { font-size: 24px; margin-bottom: 8px; display: block; }
+
+    .faq-list { max-width: 700px; }
+    .faq-item { border-bottom: 1px solid #1e1e1e; }
+    .faq-q {
+      width: 100%; background: none; border: none; color: #e8e8e8; text-align: left;
+      padding: 20px 0; font-size: 15px; font-weight: 600; cursor: pointer;
+      display: flex; justify-content: space-between; align-items: center; font-family: inherit;
+    }
+    .faq-q::after { content: '+'; font-size: 20px; color: #ff6b6b; transition: transform 0.3s; }
+    .faq-q.open::after { transform: rotate(45deg); }
+    .faq-a { max-height: 0; overflow: hidden; transition: max-height 0.3s ease; }
+    .faq-a p { padding: 0 0 20px; font-size: 14px; color: #888; line-height: 1.7; }
+
+    .cta-section {
+      text-align: center; padding: 80px 24px;
+      background: linear-gradient(180deg, #0a0a0a 0%, #1a0d0d 50%, #0a0a0a 100%);
+    }
+    .cta-section h2 { font-size: clamp(28px, 5vw, 44px); font-weight: 900; margin-bottom: 16px; }
+    .cta-section p { font-size: 16px; color: #888; margin-bottom: 32px; max-width: 500px; margin-left: auto; margin-right: auto; }
+
+    footer {
+      border-top: 1px solid #1e1e1e; padding: 40px 24px; text-align: center;
+      font-size: 12px; color: #444;
+    }
+    footer a { color: #666; text-decoration: none; }
+
+    .modal-overlay {
+      display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8);
+      backdrop-filter: blur(8px); z-index: 200; align-items: center; justify-content: center;
+    }
+    .modal-overlay.open { display: flex; }
+    .modal {
+      background: #161616; border: 1px solid #2a2a2a; border-radius: 20px;
+      padding: 36px; max-width: 480px; width: 90%; position: relative;
+      animation: modalIn 0.3s ease;
+    }
+    @keyframes modalIn { from{opacity:0;transform:scale(0.95)}to{opacity:1;transform:scale(1)} }
+    .modal-close {
+      position: absolute; top: 16px; right: 16px; background: none; border: none;
+      color: #888; font-size: 20px; cursor: pointer;
+    }
+    .modal h3 { font-size: 20px; font-weight: 800; margin-bottom: 8px; }
+    .modal .modal-sub { font-size: 13px; color: #888; margin-bottom: 20px; }
+    .form-group { margin-bottom: 14px; }
+    .form-group label { display: block; font-size: 12px; color: #888; margin-bottom: 4px; font-weight: 600; }
+    .form-group input, .form-group select, .form-group textarea {
+      width: 100%; background: #0d0d0d; border: 1px solid #2a2a2a; border-radius: 8px;
+      padding: 10px 12px; color: #e8e8e8; font-size: 13px; font-family: inherit; outline: none;
+    }
+    .form-group input:focus, .form-group select:focus, .form-group textarea:focus { border-color: #ff6b6b; }
+    .form-group textarea { min-height: 70px; resize: vertical; }
+    .form-submit {
+      width: 100%; padding: 14px; background: #ff6b6b; color: #fff; border: none;
+      border-radius: 10px; font-size: 15px; font-weight: 700; cursor: pointer;
+      margin-top: 8px; transition: all 0.2s; font-family: inherit;
+    }
+    .form-submit:hover { background: #ff5252; }
+    .form-note { font-size: 11px; color: #555; text-align: center; margin-top: 12px; }
+
+    @media (max-width: 768px) {
+      .nav-links { display: none; }
+      .mobile-menu { display: block; }
+      .hero-stats { gap: 24px; }
+      section { padding: 60px 20px; }
+    }
+  </style>
+</head>
+<body>
+
+<nav>
+  <a href="#" class="nav-logo">Dispute<span>It</span></a>
+  <div class="nav-links">
+    <a href="#how">How It Works</a>
+    <a href="#pricing">Pricing</a>
+    <a href="#tickets">Ticket Types</a>
+    <a href="#faq">FAQ</a>
+    <a href="#" class="nav-cta" onclick="openModal();return false;">Dispute My Ticket →</a>
+  </div>
+  <button class="mobile-menu" onclick="document.querySelector('.nav-links').style.display=document.querySelector('.nav-links').style.display==='flex'?'none':'flex'">☰</button>
+</nav>
+
+<section class="hero">
+  <div class="hero-content">
+    <div class="hero-badge">Stop Paying Unfair Tickets</div>
+    <h1>Got a Ticket?<br><span class="red">Fight It.</span></h1>
+    <p>Parking tickets. Speeding tickets. Red light cameras. Stop signs. Most can be disputed — and most people don't know how. We generate a professional dispute letter for you in minutes. Starting at $10. No lawyers needed.</p>
+    <div class="hero-btns">
+      <a href="#" class="btn-primary" onclick="openModal();return false;">Dispute My Ticket — Starting at $15 →</a>
+      <a href="#how" class="btn-secondary">How It Works</a>
+    </div>
+    <div class="hero-stats">
+      <div class="stat"><div class="stat-num">50%+</div><div class="stat-label">Of disputed tickets get dismissed</div></div>
+      <div class="stat"><div class="stat-num">$5</div><div class="stat-label">To submit. Refund if no dispute.</div></div>
+      <div class="stat"><div class="stat-num">5 min</div><div class="stat-label">To submit your ticket</div></div>
+    </div>
+  </div>
+</section>
+
+<section id="how">
+  <div class="section-label">How It Works</div>
+  <h2 class="section-title">Submit. We write. You win.</h2>
+  <p class="section-sub">No legal jargon, no confusing forms, no courthouse visits. We handle the hard part.</p>
+  <div class="steps">
+    <div class="step">
+      <div class="step-num">1</div>
+      <h3>Send Us Your Ticket</h3>
+      <p>Take a photo of your parking ticket or enter the details — violation type, date, location, and what happened. Takes about 2 minutes.</p>
+    </div>
+    <div class="step">
+      <div class="step-num">2</div>
+      <h3>We Write Your Dispute</h3>
+      <p>We analyze your ticket for common winning defenses — unclear signage, meter malfunction, wrong plate, expired meter grace periods, procedural errors. Then we generate a professional dispute letter tailored to your city's process.</p>
+    </div>
+    <div class="step">
+      <div class="step-num">3</div>
+      <h3>Submit & Win</h3>
+      <p>We send you the completed dispute letter plus instructions on exactly where and how to submit it. Most cities accept disputes online or by mail. Many tickets get reduced or dismissed entirely.</p>
+    </div>
+  </div>
+</section>
+
+<section id="tickets">
+  <div class="section-label">What We Dispute</div>
+  <h2 class="section-title">Parking tickets. Traffic tickets. All of them.</h2>
+  <p class="section-sub">If it came with a fine, we can fight it.</p>
+
+  <h3 style="font-size:14px;color:#ff6b6b;text-transform:uppercase;letter-spacing:1px;margin-bottom:14px;">Parking Tickets</h3>
+  <div class="ticket-types">
+    <div class="ticket-type"><span class="tt-icon">⏰</span>Expired Meter</div>
+    <div class="ticket-type"><span class="tt-icon">🚫</span>No Parking Zone</div>
+    <div class="ticket-type"><span class="tt-icon">🧹</span>Street Cleaning</div>
+    <div class="ticket-type"><span class="tt-icon">🅿️</span>Permit Required</div>
+    <div class="ticket-type"><span class="tt-icon">⬛</span>Fire Hydrant</div>
+    <div class="ticket-type"><span class="tt-icon">♿</span>Handicap Zone</div>
+    <div class="ticket-type"><span class="tt-icon">⏱️</span>Overtime Parking</div>
+    <div class="ticket-type"><span class="tt-icon">🔄</span>Alternate Side</div>
+  </div>
+
+  <h3 style="font-size:14px;color:#ff6b6b;text-transform:uppercase;letter-spacing:1px;margin:28px 0 14px;">Traffic Tickets</h3>
+  <div class="ticket-types">
+    <div class="ticket-type"><span class="tt-icon">🚨</span>Speeding</div>
+    <div class="ticket-type"><span class="tt-icon">🔴</span>Red Light</div>
+    <div class="ticket-type"><span class="tt-icon">🛑</span>Stop Sign</div>
+    <div class="ticket-type"><span class="tt-icon">📸</span>Camera Ticket</div>
+    <div class="ticket-type"><span class="tt-icon">📱</span>Cell Phone</div>
+    <div class="ticket-type"><span class="tt-icon">🔗</span>Seatbelt</div>
+    <div class="ticket-type"><span class="tt-icon">↩️</span>Illegal Turn</div>
+    <div class="ticket-type"><span class="tt-icon">🚦</span>Right of Way</div>
+    <div class="ticket-type"><span class="tt-icon">🪟</span>Window Tint</div>
+    <div class="ticket-type"><span class="tt-icon">💡</span>Equipment Violation</div>
+    <div class="ticket-type"><span class="tt-icon">🏷️</span>Expired Tags</div>
+    <div class="ticket-type"><span class="tt-icon">📋</span>Other Violations</div>
+  </div>
+</section>
+
+<section>
+  <div class="section-label">Why Dispute?</div>
+  <h2 class="section-title">The odds are in your favor</h2>
+  <p class="section-sub">Cities count on you paying without questioning it. Don't.</p>
+  <div class="reasons-grid">
+    <div class="reason-card">
+      <div class="reason-icon">📊</div>
+      <h3>Over 50% Win Rate</h3>
+      <p>Studies show that more than half of disputed parking tickets are dismissed or reduced. Most people just don't bother — that's what the city is counting on.</p>
+    </div>
+    <div class="reason-card">
+      <div class="reason-icon">🚩</div>
+      <h3>Tickets Have Errors</h3>
+      <p>Wrong plate number, wrong location, missing officer info, wrong violation code, illegible handwriting. One error can get the whole ticket thrown out.</p>
+    </div>
+    <div class="reason-card">
+      <div class="reason-icon">🪧</div>
+      <h3>Signage Problems</h3>
+      <p>Signs blocked by trees, faded, contradictory, or missing entirely. If the signage wasn't clear, the ticket isn't valid. We know how to argue this.</p>
+    </div>
+    <div class="reason-card">
+      <div class="reason-icon">⚙️</div>
+      <h3>Meter Malfunctions</h3>
+      <p>Broken meters, app payment failures, meters that didn't give you enough time. These are legitimate defenses that judges dismiss tickets for every day.</p>
+    </div>
+    <div class="reason-card">
+      <div class="reason-icon">💰</div>
+      <h3>$10 vs $50-150</h3>
+      <p>A parking ticket costs $50-150. Our dispute letter costs $10. If it gets dismissed, you just saved $40-140. If it doesn't, you're out $10. The math is obvious.</p>
+    </div>
+    <div class="reason-card">
+      <div class="reason-icon">⚖️</div>
+      <h3>It's Your Right</h3>
+      <p>Every jurisdiction gives you the right to contest a parking ticket. We just make it easy to actually exercise that right with a professional, well-written dispute.</p>
+    </div>
+  </div>
+</section>
+
+<section id="pricing">
+  <div class="section-label">Pricing</div>
+  <h2 class="section-title">One price. No surprises.</h2>
+  <p class="section-sub">Not a subscription. Not a monthly fee. One flat payment per ticket. And if we can't find a valid dispute — you get your money back minus the $5 submission fee.</p>
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:20px;max-width:680px;margin:0 auto;">
+    <div class="price-box" style="border-color:#1e1e1e;">
+      <div class="price-tag">Parking Ticket</div>
+      <div class="price-amount"><span class="dollar">$</span>15</div>
+      <div class="price-period">$5 submission + $10 dispute fee</div>
+      <ul class="price-features">
+        <li>$5 submission fee (non-refundable)</li>
+        <li>We review your ticket for valid defenses</li>
+        <li>Professional dispute letter generated</li>
+        <li>Tailored to your city's process</li>
+        <li>Delivered within 24 hours</li>
+        <li style="color:#5cfc8d;">$10 refunded if no valid dispute found</li>
+      </ul>
+      <button class="price-btn" onclick="openModal()">Dispute Parking Ticket — $15</button>
+    </div>
+    <div class="price-box">
+      <div class="price-tag">Traffic Ticket</div>
+      <div class="price-amount"><span class="dollar">$</span>25</div>
+      <div class="price-period">$5 submission + $20 dispute fee</div>
+      <ul class="price-features">
+        <li>$5 submission fee (non-refundable)</li>
+        <li>State-specific traffic law research</li>
+        <li>Points and insurance impact analysis</li>
+        <li>Professional dispute letter or court prep</li>
+        <li>Delivered within 24 hours</li>
+        <li style="color:#5cfc8d;">$20 refunded if no valid dispute found</li>
+      </ul>
+      <button class="price-btn" onclick="openModal()">Dispute Traffic Ticket — $25</button>
+    </div>
+  </div>
+  <p style="text-align:center;font-size:13px;color:#888;margin-top:24px;max-width:500px;margin-left:auto;margin-right:auto;">The $5 submission fee covers our review of your ticket. If we determine there's no viable defense, we refund the dispute fee in full. You only pay for results.</p>
+</section>
+
+<section id="faq">
+  <div class="section-label">FAQ</div>
+  <h2 class="section-title">Questions? Answers.</h2>
+  <div class="faq-list">
+    <div class="faq-item">
+      <button class="faq-q" onclick="toggleFaq(this)">Do I really have a chance of winning?</button>
+      <div class="faq-a"><p>Yes. Studies consistently show that disputed parking tickets are dismissed or reduced more than 50% of the time. Cities issue millions of tickets — they make errors constantly. Most people just pay without questioning it, which is exactly what the city wants.</p></div>
+    </div>
+    <div class="faq-item">
+      <button class="faq-q" onclick="toggleFaq(this)">How fast do I get my dispute letter?</button>
+      <div class="faq-a"><p>Within 24 hours of submitting your ticket details and payment. Most are ready in under an hour. You'll receive it via email as a PDF ready to print and mail, or copy-paste for online submissions.</p></div>
+    </div>
+    <div class="faq-item">
+      <button class="faq-q" onclick="toggleFaq(this)">What if my ticket doesn't get dismissed?</button>
+      <div class="faq-a"><p>Not every dispute wins — but at $10 vs a $50-150 ticket, the risk-reward makes it worth trying every time. We write the strongest possible argument based on your situation. Some cities also offer reduced fines even when they don't fully dismiss.</p></div>
+    </div>
+    <div class="faq-item">
+      <button class="faq-q" onclick="toggleFaq(this)">Does this work in my city?</button>
+      <div class="faq-a"><p>Yes. Every city and municipality in the US allows you to dispute parking tickets. The process varies — some accept disputes online, some require mail, some require in-person hearings. We tailor your letter to your specific city's process and include exact instructions.</p></div>
+    </div>
+    <div class="faq-item">
+      <button class="faq-q" onclick="toggleFaq(this)">What information do I need to provide?</button>
+      <div class="faq-a"><p>Your ticket number, violation type, date, time, location, and a brief description of what happened. A photo of the ticket helps us catch any errors. That's it — takes about 2 minutes.</p></div>
+    </div>
+    <div class="faq-item">
+      <button class="faq-q" onclick="toggleFaq(this)">Is there a deadline to dispute?</button>
+      <div class="faq-a"><p>Yes — most cities give you 14-30 days from the ticket date to file a dispute. Don't wait. Submit your ticket to us as soon as possible so we can get your letter to you in time.</p></div>
+    </div>
+    <div class="faq-item">
+      <button class="faq-q" onclick="toggleFaq(this)">Can I dispute a ticket I already paid?</button>
+      <div class="faq-a"><p>In most jurisdictions, paying the ticket is considered an admission of guilt and you lose the right to dispute. If you haven't paid yet, don't — dispute it first. If you already paid, check your city's rules — some allow appeals even after payment.</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="cta-section" id="start">
+  <div class="section-label">Don't Just Pay It</div>
+  <h2>That ticket might not<br>be valid.</h2>
+  <p>For $10, find out. We'll write the dispute letter. You submit it. Over half get dismissed. What do you have to lose?</p>
+  <a href="#" class="btn-primary" onclick="openModal();return false;">Submit My Ticket — $5 to Start →</a>
+</section>
+
+<footer>
+  <p>DisputeIt &copy; 2026. All rights reserved.</p>
+  <p style="margin-top:8px;">
+    <a href="mailto:info@disputeit.xyz">info@disputeit.xyz</a> &nbsp;|&nbsp;
+    Parking ticket dispute letter service. Individual results may vary. DisputeIt is not a law firm and does not provide legal advice.
+  </p>
+</footer>
+
+<!-- ORDER MODAL -->
+<div class="modal-overlay" id="orderModal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal()">&times;</button>
+    <h3>Dispute My Ticket</h3>
+    <p class="modal-sub">Fill out the details below. We'll have your dispute letter ready within 24 hours.</p>
+
+    <form id="ticketForm" onsubmit="submitTicket(event)">
+      <div class="form-group">
+        <label>Your Email</label>
+        <input type="email" id="f-email" placeholder="you@email.com" required>
+      </div>
+      <div class="form-group">
+        <label>City & State where you got the ticket</label>
+        <input type="text" id="f-city" placeholder="e.g. Los Angeles, CA" required>
+      </div>
+      <div class="form-group">
+        <label>Ticket Number (on the ticket)</label>
+        <input type="text" id="f-ticketnum" placeholder="Found on the ticket" required>
+      </div>
+      <div class="form-group">
+        <label>Violation Type</label>
+        <select id="f-violation" required>
+          <option value="">Select one</option>
+          <optgroup label="Parking Tickets">
+            <option>Expired Meter</option>
+            <option>No Parking Zone</option>
+            <option>Street Cleaning</option>
+            <option>Permit Required</option>
+            <option>Fire Hydrant</option>
+            <option>Handicap Zone</option>
+            <option>Overtime Parking</option>
+            <option>Double Parked</option>
+            <option>Alternate Side</option>
+          </optgroup>
+          <optgroup label="Traffic Tickets">
+            <option>Speeding</option>
+            <option>Red Light</option>
+            <option>Stop Sign</option>
+            <option>Camera / Photo Ticket</option>
+            <option>Cell Phone Use</option>
+            <option>Seatbelt</option>
+            <option>Illegal Turn</option>
+            <option>Right of Way</option>
+            <option>Window Tint</option>
+            <option>Equipment Violation</option>
+            <option>Expired Tags / Registration</option>
+          </optgroup>
+          <option>Other</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Date of Ticket</label>
+        <input type="date" id="f-date" required>
+      </div>
+      <div class="form-group">
+        <label>Ticket Amount ($)</label>
+        <input type="number" id="f-amount" placeholder="e.g. 65" min="1">
+      </div>
+      <div class="form-group">
+        <label>What happened? (the more detail, the stronger your dispute)</label>
+        <textarea id="f-story" placeholder="Tell us your side — were signs missing? Was the meter broken? Were you loading/unloading? Were you only gone for a minute? Any detail helps." required></textarea>
+      </div>
+
+      <div class="form-group">
+        <label>Ticket Type</label>
+        <select id="f-type" required onchange="updateFormPrice()">
+          <option value="parking">Parking Ticket — $15 ($5 submission + $10 dispute)</option>
+          <option value="traffic">Traffic Ticket — $25 ($5 submission + $20 dispute)</option>
+        </select>
+      </div>
+      <button type="submit" class="form-submit" id="form-submit-btn">Submit & Pay $15 →</button>
+      <p class="form-note">$5 submission fee is non-refundable and covers our review. If we can't find a valid dispute, the remaining balance is refunded in full. Dispute letter delivered within 24 hours.</p>
+    </form>
+  </div>
+</div>
+
+<script>
+  function toggleFaq(btn) {
+    const answer = btn.nextElementSibling;
+    const isOpen = btn.classList.contains('open');
+    document.querySelectorAll('.faq-q').forEach(q => { q.classList.remove('open'); q.nextElementSibling.style.maxHeight = '0'; });
+    if (!isOpen) { btn.classList.add('open'); answer.style.maxHeight = answer.scrollHeight + 'px'; }
+  }
+
+  function openModal() {
+    document.getElementById('orderModal').classList.add('open');
+  }
+
+  function closeModal() {
+    document.getElementById('orderModal').classList.remove('open');
+  }
+
+  document.getElementById('orderModal').addEventListener('click', function(e) {
+    if (e.target === this) closeModal();
+  });
+
+  // Stripe Payment Links — replace with your actual links from dashboard.stripe.com/payment-links
+  const STRIPE_LINKS = {
+    parking: 'https://buy.stripe.com/5kQ9AS4Kb6kReEedQe8og06',  // $15 parking ticket
+    traffic: 'https://buy.stripe.com/5kQ5kCb8z24B8fQdQe8og07',  // $25 traffic ticket
+  };
+
+  function updateFormPrice() {
+    const type = document.getElementById('f-type').value;
+    const btn = document.getElementById('form-submit-btn');
+    btn.textContent = type === 'traffic' ? 'Submit & Pay $25 →' : 'Submit & Pay $15 →';
+  }
+
+  function submitTicket(e) {
+    e.preventDefault();
+
+    const data = {
+      email: document.getElementById('f-email').value,
+      city: document.getElementById('f-city').value,
+      ticketNum: document.getElementById('f-ticketnum').value,
+      violation: document.getElementById('f-violation').value,
+      date: document.getElementById('f-date').value,
+      amount: document.getElementById('f-amount').value,
+      story: document.getElementById('f-story').value,
+    };
+
+    // Save form data to localStorage so you don't lose it
+    localStorage.setItem('disputeit-pending-' + Date.now(), JSON.stringify(data));
+
+    const ticketType = document.getElementById('f-type').value;
+    data.ticketType = ticketType;
+    data.price = ticketType === 'traffic' ? 25 : 15;
+
+    // If Stripe is configured, redirect to payment
+    const stripeLink = STRIPE_LINKS[ticketType];
+    if (stripeLink && !stripeLink.startsWith('YOUR_')) {
+      window.open(stripeLink + '?prefilled_email=' + encodeURIComponent(data.email), '_blank');
+    } else {
+      // Fallback: email the order details
+      const subject = 'DisputeIt Order — ' + data.city + ' — ' + data.violation;
+      const body = 'NEW TICKET DISPUTE ORDER\n\n' +
+        'Email: ' + data.email + '\n' +
+        'City/State: ' + data.city + '\n' +
+        'Ticket #: ' + data.ticketNum + '\n' +
+        'Violation: ' + data.violation + '\n' +
+        'Date: ' + data.date + '\n' +
+        'Ticket Amount: $' + data.amount + '\n\n' +
+        'What Happened:\n' + data.story + '\n\n' +
+        'Ticket Type: ' + data.ticketType + '\n' +
+        'Total: $' + data.price + ' ($5 submission + $' + (data.price - 5) + ' dispute fee)\n' +
+        '---\nSend payment link to customer';
+
+      window.location.href = 'mailto:info@disputeit.xyz?subject=' + encodeURIComponent(subject) + '&body=' + encodeURIComponent(body);
+    }
+
+    // Show confirmation
+    document.getElementById('ticketForm').innerHTML = `
+      <div style="text-align:center;padding:20px 0;">
+        <div style="font-size:48px;margin-bottom:16px;">✓</div>
+        <h3 style="margin-bottom:8px;">Submitted!</h3>
+        <p style="color:#888;font-size:14px;">Complete your $10 payment and we'll have your dispute letter in your inbox within 24 hours.</p>
+        <p style="color:#666;font-size:12px;margin-top:16px;">Questions? Email info@disputeit.xyz</p>
+      </div>`;
+  }
+
+  document.querySelectorAll('a[href^="#"]').forEach(a => {
+    a.addEventListener('click', e => {
+      const href = a.getAttribute('href');
+      if (href === '#') return;
+      const target = document.querySelector(href);
+      if (target) { e.preventDefault(); target.scrollIntoView({ behavior: 'smooth' }); }
+    });
+  });
+</script>
+
+</body>
+</html>
