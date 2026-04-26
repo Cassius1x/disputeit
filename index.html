@@ -497,7 +497,18 @@
     if (e.target === this) closeModal();
   });
 
-  // Stripe Payment Links
+  // ============================================================
+  // STRIPE PAYMENT LINKS — UPDATE THESE WITH YOUR REAL LINKS
+  // ============================================================
+  // Go to Stripe Dashboard → Products → create a product for each:
+  //   1. "$5 Submission Fee" — one-time, $5.00
+  //   2. "$15 Parking Dispute" — one-time, $15.00
+  //   3. "$20 Traffic Dispute" — one-time, $20.00
+  // Then create a Payment Link for each product.
+  // IMPORTANT: For the $5 submission link, set the success URL to:
+  //   https://disputeit.xyz/?payment=success
+  // (Stripe Dashboard → Payment Link → After payment → redirect to URL)
+  // ============================================================
   const STRIPE_LINKS = {
     submission: 'https://buy.stripe.com/7sY28qb8zdNj67IbI68og08',  // $5 submission fee
     parking_dispute: 'https://buy.stripe.com/5kQ9AS4Kb6kReEedQe8og06',  // $15 parking dispute
@@ -510,6 +521,15 @@
     btn.textContent = 'Submit & Pay $5 →';
   }
 
+  // ============================================================
+  // PAYMENT GATE FLOW:
+  // 1. Customer fills form → data saved to sessionStorage (NOT sent yet)
+  // 2. Customer redirected to Stripe Payment Link for $5
+  // 3. After payment, Stripe redirects back to ?payment=success
+  // 4. On load, we detect the param, pull data from sessionStorage,
+  //    THEN send to FormSubmit → triggers auto_dispute.py pipeline
+  // ============================================================
+
   function submitTicket(e) {
     e.preventDefault();
 
@@ -521,72 +541,94 @@
       date: document.getElementById('f-date').value,
       amount: document.getElementById('f-amount').value,
       story: document.getElementById('f-story').value,
+      ticketType: document.getElementById('f-type').value,
     };
+    data.disputeFee = data.ticketType === 'traffic' ? 20 : 15;
 
-    // Save form data to localStorage so you don't lose it
-    localStorage.setItem('disputeit-pending-' + Date.now(), JSON.stringify(data));
+    // Save form data to sessionStorage — DO NOT send to FormSubmit yet
+    // Data only gets sent AFTER Stripe payment succeeds and redirects back
+    sessionStorage.setItem('disputeit-pending', JSON.stringify(data));
 
-    const ticketType = document.getElementById('f-type').value;
-    data.ticketType = ticketType;
-    data.price = 5; // Submission fee only — dispute fee charged after review
-    data.disputeFee = ticketType === 'traffic' ? 20 : 15;
-
-    // Send form data to business owner via FormSubmit.co
-    fetch('https://formsubmit.co/ajax/4037796@gmail.com', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
-      },
-      body: JSON.stringify({
-        _subject: 'New DisputeIt Ticket — ' + data.city + ' — ' + data.violation,
-        _template: 'table',
-        Email: data.email,
-        'City/State': data.city,
-        'Ticket Number': data.ticketNum,
-        Violation: data.violation,
-        'Ticket Date': data.date,
-        'Ticket Amount': '$' + data.amount,
-        'What Happened': data.story,
-        'Ticket Type': data.ticketType,
-        'Submission Fee': '$5',
-        'Dispute Fee (if viable)': '$' + data.disputeFee + ' (' + data.ticketType + ')',
-      }),
-    }).catch(function(err) {
-      console.warn('FormSubmit notification failed:', err);
-    });
-
-    // Redirect to $5 submission payment
+    // Redirect to Stripe $5 payment (not window.open — full redirect so they can't skip)
     const stripeLink = STRIPE_LINKS.submission;
-    if (stripeLink && !stripeLink.startsWith('YOUR_')) {
-      window.open(stripeLink + '?prefilled_email=' + encodeURIComponent(data.email), '_blank');
+    if (stripeLink && !stripeLink.includes('YOUR_STRIPE')) {
+      // Append email so Stripe pre-fills it
+      window.location.href = stripeLink + '?prefilled_email=' + encodeURIComponent(data.email);
     } else {
-      // Fallback: email the order details
-      const subject = 'DisputeIt Order — ' + data.city + ' — ' + data.violation;
-      const body = 'NEW TICKET DISPUTE ORDER\n\n' +
-        'Email: ' + data.email + '\n' +
-        'City/State: ' + data.city + '\n' +
-        'Ticket #: ' + data.ticketNum + '\n' +
-        'Violation: ' + data.violation + '\n' +
-        'Date: ' + data.date + '\n' +
-        'Ticket Amount: $' + data.amount + '\n\n' +
-        'What Happened:\n' + data.story + '\n\n' +
-        'Ticket Type: ' + data.ticketType + '\n' +
-        'Submission Fee: $5 (paid)\n' +
-        'Dispute Fee (if viable): $' + data.disputeFee + ' (' + data.ticketType + ')\n' +
-        '---\nReview ticket. If disputable, send $' + data.disputeFee + ' payment link to customer.';
-
-      window.location.href = 'mailto:info@disputeit.xyz?subject=' + encodeURIComponent(subject) + '&body=' + encodeURIComponent(body);
+      alert('Payment is not configured yet. Please contact info@disputeit.xyz');
     }
+  }
 
-    // Show confirmation
-    document.getElementById('ticketForm').innerHTML = `
-      <div style="text-align:center;padding:20px 0;">
-        <div style="font-size:48px;margin-bottom:16px;">✓</div>
-        <h3 style="margin-bottom:8px;">Submitted!</h3>
-        <p style="color:#888;font-size:14px;">Complete your payment and we'll have your dispute letter in your inbox within 24 hours.</p>
-        <p style="color:#666;font-size:12px;margin-top:16px;">Questions? Email info@disputeit.xyz</p>
-      </div>`;
+  // ============================================================
+  // ON PAGE LOAD: Check if returning from Stripe payment
+  // ============================================================
+  (function handlePaymentReturn() {
+    const params = new URLSearchParams(window.location.search);
+
+    if (params.get('payment') === 'success') {
+      // Clean the URL so refreshing doesn't re-trigger
+      window.history.replaceState({}, '', window.location.pathname);
+
+      const raw = sessionStorage.getItem('disputeit-pending');
+      if (!raw) {
+        // No form data found — they might have cleared their browser or used a different tab
+        showPaymentResult('warning', 'Payment received, but we couldn\'t find your ticket details. Please email your ticket info to info@disputeit.xyz and reference your Stripe payment.');
+        return;
+      }
+
+      const data = JSON.parse(raw);
+
+      // NOW send to FormSubmit — payment is confirmed
+      fetch('https://formsubmit.co/ajax/4037796@gmail.com', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+        body: JSON.stringify({
+          _subject: 'PAID — New DisputeIt Ticket — ' + data.city + ' — ' + data.violation,
+          _template: 'table',
+          'PAYMENT STATUS': 'PAID $5 via Stripe',
+          Email: data.email,
+          'City/State': data.city,
+          'Ticket Number': data.ticketNum,
+          Violation: data.violation,
+          'Ticket Date': data.date,
+          'Ticket Amount': '$' + data.amount,
+          'What Happened': data.story,
+          'Ticket Type': data.ticketType,
+          'Submission Fee': '$5 (PAID)',
+          'Dispute Fee (if viable)': '$' + data.disputeFee + ' (' + data.ticketType + ')',
+        }),
+      }).then(function(res) {
+        if (res.ok) {
+          sessionStorage.removeItem('disputeit-pending');
+          showPaymentResult('success', 'Payment confirmed! We\'ve received your ticket details for <strong>' + data.violation + '</strong> in <strong>' + data.city + '</strong>. Your dispute letter will be in your inbox at <strong>' + data.email + '</strong> within 24 hours.');
+        } else {
+          showPaymentResult('warning', 'Payment confirmed, but there was an issue sending your ticket details. Please email your ticket info to info@disputeit.xyz and reference your Stripe payment.');
+        }
+      }).catch(function() {
+        showPaymentResult('warning', 'Payment confirmed, but there was a network issue. Please email your ticket info to info@disputeit.xyz and we\'ll get your dispute letter started.');
+      });
+    }
+  })();
+
+  function showPaymentResult(type, message) {
+    // Show a confirmation banner at the top of the page
+    const banner = document.createElement('div');
+    banner.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:300;padding:20px 24px;text-align:center;font-size:14px;font-weight:600;font-family:Inter,sans-serif;line-height:1.6;';
+    if (type === 'success') {
+      banner.style.background = 'linear-gradient(135deg, #0a2a0a, #0d1f0d)';
+      banner.style.borderBottom = '2px solid #2ecc71';
+      banner.style.color = '#5cfc8d';
+    } else {
+      banner.style.background = 'linear-gradient(135deg, #2a1a0a, #1f170d)';
+      banner.style.borderBottom = '2px solid #e67e22';
+      banner.style.color = '#f0c040';
+    }
+    banner.innerHTML = message + '<button onclick="this.parentElement.remove()" style="margin-left:16px;background:none;border:1px solid currentColor;color:inherit;padding:4px 12px;border-radius:6px;cursor:pointer;font-size:12px;">Dismiss</button>';
+    document.body.prepend(banner);
+    window.scrollTo(0, 0);
   }
 
   document.querySelectorAll('a[href^="#"]').forEach(a => {
